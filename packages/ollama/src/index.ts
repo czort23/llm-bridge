@@ -1,1 +1,1 @@
-export {};
+export { OllamaProvider } from './provider.js';
