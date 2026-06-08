@@ -9,7 +9,7 @@ interface OllamaProviderOptions {
 export class OllamaProvider implements LLMProvider {
     private readonly endpoint: string;
 
-    constructor(options: OllamaProviderOptions) {
+    constructor(options: OllamaProviderOptions = {}) {
         this.endpoint = options.endpoint ?? 'http://localhost:11434/api/chat';
     }
 
