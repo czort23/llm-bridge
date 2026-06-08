@@ -1,0 +1,10 @@
+{
+  "name": "@llm-bridge/examples",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@llm-bridge/core": "workspace:*",
+    "@llm-bridge/ollama": "workspace:*"
+  }
+}
