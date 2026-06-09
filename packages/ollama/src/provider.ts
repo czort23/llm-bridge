@@ -2,36 +2,44 @@ import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-brid
 import { NetworkError, ProviderError, RetryableError } from "@llm-bridge/core";
 import { fromOllamaResponse, toOllamaRequest } from "./mapping.js";
 
-interface OllamaProviderOptions {
-    endpoint?: string;
+interface OllamaConfig {
+    baseUrl?: string;
+    apiKey?: string;
 }
 
 export class OllamaProvider implements LLMProvider {
-    private readonly endpoint: string;
+    private readonly baseUrl: string;
+    private readonly apiKey?: string;
 
-    constructor(options: OllamaProviderOptions = {}) {
-        this.endpoint = options.endpoint ?? 'http://localhost:11434/api/chat';
+    constructor(config: OllamaConfig = {}) {
+        this.baseUrl = config.baseUrl ?? 'http://localhost:11434';
+        this.apiKey = config.apiKey;
+    }
+
+    private headers(): Record<string, string> {
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+        if (this.apiKey) {
+            headers['Authorization'] = `Bearer ${this.apiKey}`;
+        }
+        return headers;
     }
 
     async complete(options: CompletionOptions): Promise<CompletionResult> {
         let response: Response;
         try {
-            response = await fetch(this.endpoint, {
+            response = await fetch(`${this.baseUrl}/api/chat`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json',},
+                headers: this.headers(),
                 body: JSON.stringify(toOllamaRequest(options)),
             });
         } catch {
-            throw new NetworkError(`Could not reach Ollama at ${this.endpoint}`);
+            throw new NetworkError(`Could not reach Ollama at ${this.baseUrl}`);
         }
 
         if (!response.ok) {
-            if (response.status === 429
-                || response.status === 500
-                || response.status === 502
-                || response.status === 503
-                || response.status === 504
-            ) {
+            if ([429, 500, 502, 503, 504].includes(response.status)) {
                 throw new RetryableError('Ollama returned ' + String(response.status), response.status);
             }
             throw new ProviderError('Ollama returned ' + String(response.status), response.status);
