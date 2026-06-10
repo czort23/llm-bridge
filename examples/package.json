@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@llm-bridge/core": "workspace:*",
-    "@llm-bridge/ollama": "workspace:*"
+    "@llm-bridge/ollama": "workspace:*",
+    "@llm-bridge/gemini": "workspace:*"
   }
 }
