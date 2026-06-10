@@ -1,6 +1,6 @@
 import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-bridge/core';
 import { NetworkError, ProviderError, RetryableError } from "@llm-bridge/core";
-import { fromOllamaResponse, toOllamaRequest } from "./mapping.js";
+import { fromResponse, toRequest } from "./mapping.js";
 
 interface OllamaConfig {
     baseUrl?: string;
@@ -32,7 +32,7 @@ export class OllamaProvider implements LLMProvider {
             response = await fetch(`${this.baseUrl}/api/chat`, {
                 method: 'POST',
                 headers: this.headers(),
-                body: JSON.stringify(toOllamaRequest(options)),
+                body: JSON.stringify(toRequest(options)),
             });
         } catch {
             throw new NetworkError(`Could not reach Ollama at ${this.baseUrl}`);
@@ -52,6 +52,6 @@ export class OllamaProvider implements LLMProvider {
             throw new ProviderError('Ollama returned invalid JSON', response.status);
         }
 
-        return fromOllamaResponse(data);
+        return fromResponse(data);
     }
 }
