@@ -1,6 +1,15 @@
 import type { CompletionOptions, CompletionResult } from "@llm-bridge/core";
 
-export function toOllamaRequest(options: CompletionOptions) {
+interface OllamaResponse {
+    message: {
+        content: string,
+    },
+    model: string,
+    prompt_eval_count: number,
+    eval_count: number,
+}
+
+export function toRequest(options: CompletionOptions) {
     return {
         model: options.model,
         messages: options.messages,
@@ -12,16 +21,7 @@ export function toOllamaRequest(options: CompletionOptions) {
     }
 }
 
-interface OllamaResponse {
-    message: {
-        content: string,
-    },
-    model: string,
-    prompt_eval_count: number,
-    eval_count: number,
-}
-
-export function fromOllamaResponse(data: unknown): CompletionResult {
+export function fromResponse(data: unknown): CompletionResult {
     const response = data as OllamaResponse;
     return {
         content: response.message.content,
