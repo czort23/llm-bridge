@@ -19,4 +19,5 @@ export interface CompletionResult {
 
 export interface LLMProvider {
     complete(options: CompletionOptions): Promise<CompletionResult>;
+    stream(options: CompletionOptions): AsyncIterable<string>;
 }
