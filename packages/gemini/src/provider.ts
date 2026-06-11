@@ -7,6 +7,23 @@ interface GeminiConfig {
     apiKey: string;
 }
 
+async function* responseLines(body: ReadableStream<Uint8Array>): AsyncIterable<string> {
+    const reader = body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+            if (line.trim()) yield line;
+        }
+    }
+}
+
 export class GeminiProvider implements LLMProvider {
     private readonly baseUrl: string;
     private readonly apiKey: string
@@ -16,16 +33,16 @@ export class GeminiProvider implements LLMProvider {
         this.apiKey = config.apiKey;
     }
 
-    async complete(options: CompletionOptions): Promise<CompletionResult> {
+    private async fetchChat(url: string, body:unknown): Promise<Response> {
         let response: Response;
         try {
-            response = await fetch(`${this.baseUrl}/models/${options.model}:generateContent`, {
+            response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'x-goog-api-key': this.apiKey,
                 },
-                body: JSON.stringify(toRequest(options)),
+                body: JSON.stringify(body),
             });
         } catch {
             throw new NetworkError(`Could not reach Gemini at ${this.baseUrl}`);
@@ -38,6 +55,13 @@ export class GeminiProvider implements LLMProvider {
             throw new ProviderError('Gemini returned ' + String(response.status), response.status);
         }
 
+        return response;
+    }
+
+    async complete(options: CompletionOptions): Promise<CompletionResult> {
+        const url = `${this.baseUrl}/models/${options.model}:generateContent`;
+        const response = await this.fetchChat(url, toRequest(options));
+
         let data: unknown;
         try {
             data = await response.json();
@@ -46,5 +70,20 @@ export class GeminiProvider implements LLMProvider {
         }
 
         return fromResponse(data, options.model);
+    }
+
+    async *stream(options: CompletionOptions): AsyncIterable<string> {
+        const url = `${this.baseUrl}/models/${options.model}:streamGenerateContent?alt=sse`;
+        const response = await this.fetchChat(url, toRequest(options));
+
+        if (!response.body) {
+            throw new ProviderError('Gemini returned empty response body', response.status);
+        }
+
+        for await (const line of responseLines(response.body)) {
+            if (!line.startsWith('data: ')) continue;
+            const chunk = JSON.parse(line.slice(6)) as { candidates: { content: { parts: { text: string }[] } }[] };
+            yield chunk.candidates[0]?.content.parts[0]?.text ?? '';
+        }
     }
 }
