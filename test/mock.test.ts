@@ -39,4 +39,36 @@ describe('MockProvider', () => {
 
     expect(provider.calls[0]).toEqual(options);
   });
+
+  it('yields chunks in order', async () => {
+    const provider = new MockProvider();
+    const results = [];
+
+    for await (const chunk of provider.stream({ model: 'x', messages: [userMessage]})) {
+      results.push(chunk);
+    }
+
+    expect(results[0]).toBe('mock ');
+    expect(results[1]).toBe('response');
+  });
+
+  it('records the call in calls', async () => {
+    const provider = new MockProvider();
+    const options = { model: 'x', messages: [userMessage], temperature: 0.5, maxTokens: 100 };
+
+    for await (const _ of provider.stream(options)) { /* consume */ }
+
+    expect(provider.calls[0]).toEqual(options);
+  });
+
+  it('chunks concatenated equal the full response', async () => {
+    const provider = new MockProvider();
+    const results = [];
+
+    for await (const chunk of provider.stream({ model: 'x', messages: [userMessage] })) {
+      results.push(chunk);
+    }
+
+    expect(results.join('')).toBe('mock response');
+  });
 });

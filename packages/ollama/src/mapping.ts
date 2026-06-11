@@ -9,7 +9,7 @@ interface OllamaResponse {
     eval_count: number,
 }
 
-export function toRequest(options: CompletionOptions) {
+export function toRequest(options: CompletionOptions, stream: boolean = false) {
     return {
         model: options.model,
         messages: options.messages,
@@ -17,7 +17,7 @@ export function toRequest(options: CompletionOptions) {
             temperature: options.temperature,
             num_predict: options.maxTokens,
         },
-        stream: false,
+        stream: stream,
     }
 }
 
