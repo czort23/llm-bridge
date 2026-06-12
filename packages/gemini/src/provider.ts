@@ -1,10 +1,11 @@
 import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-bridge/core';
-import { NetworkError, ProviderError, RetryableError } from "@llm-bridge/core";
+import { LLMBridgeError, NetworkError, ProviderError, RetryableError } from "@llm-bridge/core";
 import { fromResponse, toRequest } from "./mapping.js";
 
 interface GeminiConfig {
     baseUrl?: string;
     apiKey: string;
+    model?: string;
 }
 
 async function* responseLines(body: ReadableStream<Uint8Array>): AsyncIterable<string> {
@@ -27,10 +28,12 @@ async function* responseLines(body: ReadableStream<Uint8Array>): AsyncIterable<s
 export class GeminiProvider implements LLMProvider {
     private readonly baseUrl: string;
     private readonly apiKey: string
+    private readonly model?: string
 
     constructor(config: GeminiConfig) {
         this.baseUrl = config.baseUrl ?? 'https://generativelanguage.googleapis.com/v1';
         this.apiKey = config.apiKey;
+        this.model = config.model;
     }
 
     private async fetchChat(url: string, body:unknown): Promise<Response> {
@@ -59,7 +62,10 @@ export class GeminiProvider implements LLMProvider {
     }
 
     async complete(options: CompletionOptions): Promise<CompletionResult> {
-        const url = `${this.baseUrl}/models/${options.model}:generateContent`;
+        const model = options.model ?? this.model;
+        if (!model) throw new LLMBridgeError('No model specified');
+
+        const url = `${this.baseUrl}/models/${model}:generateContent`;
         const response = await this.fetchChat(url, toRequest(options));
 
         let data: unknown;
@@ -69,11 +75,14 @@ export class GeminiProvider implements LLMProvider {
             throw new ProviderError('Gemini returned invalid JSON', response.status);
         }
 
-        return fromResponse(data, options.model);
+        return fromResponse(data, model);
     }
 
     async *stream(options: CompletionOptions): AsyncIterable<string> {
-        const url = `${this.baseUrl}/models/${options.model}:streamGenerateContent?alt=sse`;
+        const model = options.model ?? this.model;
+        if (!model) throw new LLMBridgeError('No model specified');
+
+        const url = `${this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`;
         const response = await this.fetchChat(url, toRequest(options));
 
         if (!response.body) {
