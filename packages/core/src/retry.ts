@@ -25,9 +25,29 @@ async function executeWithRetry<T>(fn: () => Promise<T>, options?: RetryOptions)
     }
 }
 
+async function* executeStreamWithRetry(fn: () => AsyncIterable<string>, options?: RetryOptions): AsyncIterable<string> {
+    const { maxAttempts = 3, initialDelayMs = 500 } = options ?? {};
+    let yielded = false;
+    let attempt = 0;
+    for (;;) {
+        try {
+            for await (const chunk of fn()) {
+                yield chunk;
+                yielded = true;
+            }
+            return;
+        } catch (error) {
+            if (!(error instanceof RetryableError) || yielded) throw error;
+            attempt++;
+            if (attempt >= maxAttempts) throw error;
+            await sleep(initialDelayMs * Math.pow(2, attempt - 1));
+        }
+    }
+}
+
 export function withRetry(provider: LLMProvider, options?: RetryOptions): LLMProvider {
     return {
         complete: (opts) => executeWithRetry(() => provider.complete(opts), options),
-        stream: (opts) => provider.stream(opts),
+        stream: (opts) => executeStreamWithRetry(() => provider.stream(opts), options),
     }
 }
