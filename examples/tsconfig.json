@@ -7,6 +7,7 @@
   "references": [
     { "path": "../packages/core" },
     { "path": "../packages/ollama" },
-    { "path": "../packages/gemini" }
+    { "path": "../packages/gemini" },
+    { "path": "../packages/groq" }
   ]
 }
