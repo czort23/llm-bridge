@@ -1,10 +1,11 @@
 import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-bridge/core';
-import { NetworkError, ProviderError, RetryableError } from "@llm-bridge/core";
+import { LLMBridgeError, NetworkError, ProviderError, RetryableError } from "@llm-bridge/core";
 import { fromResponse, toRequest } from "./mapping.js";
 
 interface OllamaConfig {
     baseUrl?: string;
     apiKey?: string;
+    model?: string;
 }
 
 async function* responseLines(body: ReadableStream<Uint8Array>): AsyncIterable<string> {
@@ -27,10 +28,12 @@ async function* responseLines(body: ReadableStream<Uint8Array>): AsyncIterable<s
 export class OllamaProvider implements LLMProvider {
     private readonly baseUrl: string;
     private readonly apiKey?: string;
+    private readonly model?: string;
 
     constructor(config: OllamaConfig = {}) {
         this.baseUrl = config.baseUrl ?? 'http://localhost:11434';
         this.apiKey = config.apiKey;
+        this.model = config.model;
     }
 
     private headers(): Record<string, string> {
@@ -66,7 +69,10 @@ export class OllamaProvider implements LLMProvider {
     }
 
     async complete(options: CompletionOptions): Promise<CompletionResult> {
-        const response = await this.fetchChat(toRequest(options));
+        const model = options.model ?? this.model;
+        if (!model) throw new LLMBridgeError('No model specified');
+
+        const response = await this.fetchChat(toRequest({ ...options, model }));
 
         let data: unknown;
         try {
@@ -79,7 +85,10 @@ export class OllamaProvider implements LLMProvider {
     }
 
     async *stream(options: CompletionOptions): AsyncIterable<string> {
-        const response = await this.fetchChat(toRequest(options, true));
+        const model = options.model ?? this.model;
+        if (!model) throw new LLMBridgeError('No model specified');
+
+        const response = await this.fetchChat(toRequest({ ...options, model }, true));
 
         if (!response.body) {
             throw new ProviderError('Ollama returned empty response body', response.status);

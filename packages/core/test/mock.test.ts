@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { MockProvider } from '../packages/core/src/mock.js';
-import type { Message } from '../packages/core/src/types.js';
+import { MockProvider } from '../src/mock.js';
+import type { Message } from '../src';
 
 const userMessage: Message = { role: 'user', content: 'hello' };
 

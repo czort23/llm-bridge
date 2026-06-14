@@ -4,7 +4,7 @@ export interface Message {
 }
 
 export interface CompletionOptions {
-    model: string;
+    model?: string;
     messages: Message[];
     temperature?: number;
     maxTokens?: number;

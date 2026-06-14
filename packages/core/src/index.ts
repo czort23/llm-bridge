@@ -1,2 +1,5 @@
 export type { LLMProvider, CompletionResult, CompletionOptions, Message } from './types.js';
 export { LLMBridgeError, NetworkError, ProviderError, RetryableError } from './errors.js';
+export type { RetryOptions } from './retry.js';
+export { withRetry } from './retry.js';
+export { withFallback } from './fallback.js';
