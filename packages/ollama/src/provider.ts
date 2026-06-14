@@ -1,28 +1,11 @@
 import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-bridge/core';
-import { LLMBridgeError, NetworkError, ProviderError, RetryableError } from "@llm-bridge/core";
+import { LLMBridgeError, NetworkError, ProviderError, RetryableError, responseLines } from "@llm-bridge/core";
 import { fromResponse, toRequest } from "./mapping.js";
 
 interface OllamaConfig {
     baseUrl?: string;
     apiKey?: string;
     model?: string;
-}
-
-async function* responseLines(body: ReadableStream<Uint8Array>): AsyncIterable<string> {
-    const reader = body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-        for (const line of lines) {
-            if (line.trim()) yield line;
-        }
-    }
 }
 
 export class OllamaProvider implements LLMProvider {
