@@ -2,6 +2,8 @@ import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-brid
 import { LLMBridgeError, NetworkError, ProviderError, RetryableError, responseLines } from "@llm-bridge/core";
 import { fromResponse, toRequest } from "./mapping.js";
 
+const RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504];
+
 interface GeminiConfig {
     baseUrl?: string;
     apiKey: string;
@@ -19,6 +21,12 @@ export class GeminiProvider implements LLMProvider {
         this.model = config.model;
     }
 
+    private resolveModel(options: CompletionOptions): string {
+        const model = options.model ?? this.model;
+        if (!model) throw new LLMBridgeError('No model specified');
+        return model;
+    }
+
     private async fetchChat(url: string, body:unknown): Promise<Response> {
         let response: Response;
         try {
@@ -30,41 +38,35 @@ export class GeminiProvider implements LLMProvider {
                 },
                 body: JSON.stringify(body),
             });
-        } catch {
-            throw new NetworkError(`Could not reach Gemini at ${this.baseUrl}`);
+        } catch (error) {
+            throw new NetworkError(`Could not reach Gemini at ${this.baseUrl}: ${String(error)}`);
         }
 
         if (!response.ok) {
-            if ([429, 500, 502, 503, 504].includes(response.status)) {
-                throw new RetryableError('Gemini returned ' + String(response.status), response.status);
+            if (RETRYABLE_STATUS_CODES.includes(response.status)) {
+                throw new RetryableError(`Gemini returned ${String(response.status)} ${response.statusText}`, response.status);
             }
-            throw new ProviderError('Gemini returned ' + String(response.status), response.status);
+            throw new ProviderError(`Gemini returned ${String(response.status)} ${response.statusText}`, response.status);
         }
 
         return response;
     }
 
     async complete(options: CompletionOptions): Promise<CompletionResult> {
-        const model = options.model ?? this.model;
-        if (!model) throw new LLMBridgeError('No model specified');
-
+        const model = this.resolveModel(options);
         const url = `${this.baseUrl}/models/${model}:generateContent`;
         const response = await this.fetchChat(url, toRequest(options));
 
-        let data: unknown;
         try {
-            data = await response.json();
-        } catch {
-            throw new ProviderError('Gemini returned invalid JSON', response.status);
+            const data: unknown = await response.json();
+            return fromResponse(data, model);
+        } catch (error) {
+            throw new ProviderError(`Gemini returned invalid JSON: ${String(error)}`, response.status);
         }
-
-        return fromResponse(data, model);
     }
 
     async *stream(options: CompletionOptions): AsyncIterable<string> {
-        const model = options.model ?? this.model;
-        if (!model) throw new LLMBridgeError('No model specified');
-
+        const model = this.resolveModel(options);
         const url = `${this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`;
         const response = await this.fetchChat(url, toRequest(options));
 

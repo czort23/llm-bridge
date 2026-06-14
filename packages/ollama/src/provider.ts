@@ -2,6 +2,8 @@ import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-brid
 import { LLMBridgeError, NetworkError, ProviderError, RetryableError, responseLines } from "@llm-bridge/core";
 import { fromResponse, toRequest } from "./mapping.js";
 
+const RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504];
+
 interface OllamaConfig {
     baseUrl?: string;
     apiKey?: string;
@@ -17,6 +19,12 @@ export class OllamaProvider implements LLMProvider {
         this.baseUrl = config.baseUrl ?? 'http://localhost:11434';
         this.apiKey = config.apiKey;
         this.model = config.model;
+    }
+
+    private resolveModel(options: CompletionOptions): string {
+        const model = options.model ?? this.model;
+        if (!model) throw new LLMBridgeError('No model specified');
+        return model;
     }
 
     private headers(): Record<string, string> {
@@ -37,40 +45,34 @@ export class OllamaProvider implements LLMProvider {
                 headers: this.headers(),
                 body: JSON.stringify(body),
             });
-        } catch {
-            throw new NetworkError(`Could not reach Ollama at ${this.baseUrl}`);
+        } catch (error) {
+            throw new NetworkError(`Could not reach Ollama at ${this.baseUrl}: ${String(error)}`);
         }
 
         if (!response.ok) {
-            if ([429, 500, 502, 503, 504].includes(response.status)) {
-                throw new RetryableError('Ollama returned ' + String(response.status), response.status);
+            if (RETRYABLE_STATUS_CODES.includes(response.status)) {
+                throw new RetryableError(`Ollama returned ${String(response.status)} ${response.statusText}`, response.status);
             }
-            throw new ProviderError('Ollama returned ' + String(response.status), response.status);
+            throw new ProviderError(`Ollama returned ${String(response.status)} ${response.statusText}`, response.status);
         }
 
         return response;
     }
 
     async complete(options: CompletionOptions): Promise<CompletionResult> {
-        const model = options.model ?? this.model;
-        if (!model) throw new LLMBridgeError('No model specified');
-
+        const model = this.resolveModel(options);
         const response = await this.fetchChat(toRequest({ ...options, model }));
 
-        let data: unknown;
         try {
-            data = await response.json();
-        } catch {
-            throw new ProviderError('Ollama returned invalid JSON', response.status);
+            const data: unknown = await response.json();
+            return fromResponse(data);
+        } catch (error) {
+            throw new ProviderError(`Ollama returned invalid JSON: ${String(error)}`, response.status);
         }
-
-        return fromResponse(data);
     }
 
     async *stream(options: CompletionOptions): AsyncIterable<string> {
-        const model = options.model ?? this.model;
-        if (!model) throw new LLMBridgeError('No model specified');
-
+        const model = this.resolveModel(options);
         const response = await this.fetchChat(toRequest({ ...options, model }, true));
 
         if (!response.body) {

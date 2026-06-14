@@ -2,6 +2,8 @@ import type { CompletionOptions, CompletionResult, LLMProvider } from "@llm-brid
 import { LLMBridgeError, NetworkError, ProviderError, RetryableError, responseLines } from "@llm-bridge/core";
 import { fromResponse, toRequest } from "./mapping.js";
 
+const RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504];
+
 interface GroqConfig {
     baseUrl?: string;
     apiKey: string;
@@ -19,6 +21,12 @@ export class GroqProvider implements LLMProvider {
         this.model = config.model;
     }
 
+    private resolveModel(options: CompletionOptions): string {
+        const model = options.model ?? this.model;
+        if (!model) throw new LLMBridgeError('No model specified');
+        return model;
+    }
+
     private async fetchChat(body: unknown): Promise<Response> {
         let response: Response;
         try {
@@ -26,42 +34,38 @@ export class GroqProvider implements LLMProvider {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + this.apiKey,
+                    'Authorization': `Bearer ${this.apiKey}`,
                 },
                 body: JSON.stringify(body),
             });
-        } catch {
-            throw new NetworkError(`Could not reach Groq at ${this.baseUrl}`);
+        } catch (error) {
+            throw new NetworkError(`Could not reach Groq at ${this.baseUrl}: ${String(error)}`);
         }
 
         if (!response.ok) {
-            if ([429, 500, 502, 503, 504].includes(response.status)) {
-                throw new RetryableError('Groq returned ' + String(response.status), response.status);
+            if (RETRYABLE_STATUS_CODES.includes(response.status)) {
+                throw new RetryableError(`Groq returned ${String(response.status)} ${response.statusText}`, response.status);
             }
-            throw new ProviderError('Groq returned ' + String(response.status), response.status);
+            throw new ProviderError(`Groq returned ${String(response.status)} ${response.statusText}`, response.status);
         }
 
         return response;
     }
 
     async complete(options: CompletionOptions): Promise<CompletionResult> {
-        const model = options.model ?? this.model;
-        if (!model) throw new LLMBridgeError('No model specified');
-
+        const model = this.resolveModel(options);
         const response = await this.fetchChat(toRequest({ ...options, model }));
 
         try {
             const data: unknown = await response.json();
             return fromResponse(data);
-        } catch {
-            throw new ProviderError('Groq returned invalid JSON', response.status);
+        } catch (error) {
+            throw new ProviderError(`Groq returned invalid JSON: ${String(error)}`, response.status);
         }
     }
 
     async *stream(options: CompletionOptions): AsyncIterable<string> {
-        const model = options.model ?? this.model;
-        if (!model) throw new LLMBridgeError('No model specified');
-
+        const model = this.resolveModel(options);
         const response = await this.fetchChat(toRequest({ ...options, model }, true));
 
         if (!response.body) {

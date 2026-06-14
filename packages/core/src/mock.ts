@@ -1,5 +1,5 @@
 import type { CompletionOptions, CompletionResult, LLMProvider } from "./types.js";
-import {RetryableError} from "./errors.js";
+import { RetryableError } from "./errors.js";
 
 export class MockProvider implements LLMProvider {
     readonly calls: CompletionOptions[] = [];

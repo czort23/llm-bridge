@@ -50,9 +50,7 @@ export function toRequest(options: CompletionOptions) {
 
 export function fromResponse(data: unknown, model: string): CompletionResult {
     const response = data as GeminiResponse;
-
     const text = response.candidates[0]?.content.parts[0]?.text;
-
     if (text === undefined) {
         throw new LLMBridgeError('Gemini returned no content (possibly blocked or empty response)');
     }

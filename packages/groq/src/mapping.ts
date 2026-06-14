@@ -26,7 +26,6 @@ export function toRequest(options: CompletionOptions, stream: boolean = false) {
 
 export function fromResponse(data: unknown): CompletionResult {
     const response = data as GroqResponse;
-
     const text = response.choices[0]?.message.content;
     if (text === undefined) {
         throw new LLMBridgeError('Groq returned no content (possibly blocked or empty response)');
