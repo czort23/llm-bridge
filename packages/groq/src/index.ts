@@ -1,1 +1,1 @@
-export { GroqProvider } from './provider.js'
+export { GroqProvider } from './provider.js';
