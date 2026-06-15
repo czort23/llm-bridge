@@ -42,6 +42,10 @@ async function* executeStreamWithFallback(
   throw new Error('All providers failed');
 }
 
+/**
+ * Wraps a list of providers with automatic fallback. Tries each provider in order,
+ * moving to the next on retryable errors. Override `shouldFallback` to control when fallback triggers.
+ */
 export function withFallback(providers: LLMProvider[], options?: FallbackOptions): LLMProvider {
   return {
     complete: (opts) =>

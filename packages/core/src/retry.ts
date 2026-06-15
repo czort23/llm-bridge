@@ -48,6 +48,10 @@ async function* executeStreamWithRetry(
   }
 }
 
+/**
+ * Wraps a provider with automatic retry on retryable errors (rate limits, 5xx).
+ * Only retries if no chunks have been yielded yet during streaming.
+ */
 export function withRetry(provider: LLMProvider, options?: RetryOptions): LLMProvider {
   return {
     complete: (opts) => executeWithRetry(() => provider.complete(opts), options),
