@@ -44,7 +44,7 @@ describe('MockProvider', () => {
     const provider = new MockProvider();
     const results = [];
 
-    for await (const chunk of provider.stream({ model: 'x', messages: [userMessage]})) {
+    for await (const chunk of provider.stream({ model: 'x', messages: [userMessage] })) {
       results.push(chunk);
     }
 
@@ -56,7 +56,9 @@ describe('MockProvider', () => {
     const provider = new MockProvider();
     const options = { model: 'x', messages: [userMessage], temperature: 0.5, maxTokens: 100 };
 
-    for await (const _ of provider.stream(options)) { /* consume */ }
+    for await (const _ of provider.stream(options)) {
+      /* consume */
+    }
 
     expect(provider.calls[0]).toEqual(options);
   });
