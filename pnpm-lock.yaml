@@ -47,6 +47,9 @@ importers:
       '@llm-bridge/ollama':
         specifier: workspace:*
         version: link:../packages/ollama
+      '@llm-bridge/openai':
+        specifier: workspace:*
+        version: link:../packages/openai
 
   packages/core: {}
 
@@ -63,6 +66,12 @@ importers:
         version: link:../core
 
   packages/ollama:
+    dependencies:
+      '@llm-bridge/core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/openai:
     dependencies:
       '@llm-bridge/core':
         specifier: workspace:*
