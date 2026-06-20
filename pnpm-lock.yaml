@@ -35,6 +35,9 @@ importers:
 
   examples:
     dependencies:
+      '@llm-bridge/anthropic':
+        specifier: workspace:*
+        version: link:../packages/anthropic
       '@llm-bridge/core':
         specifier: workspace:*
         version: link:../packages/core
@@ -50,6 +53,12 @@ importers:
       '@llm-bridge/openai':
         specifier: workspace:*
         version: link:../packages/openai
+
+  packages/anthropic:
+    dependencies:
+      '@llm-bridge/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/core: {}
 

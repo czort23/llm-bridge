@@ -5,6 +5,7 @@
     { "path": "./packages/ollama" },
     { "path": "./packages/gemini" },
     { "path": "./packages/groq" },
-    { "path": "./packages/openai" }
+    { "path": "./packages/openai" },
+    { "path": "./packages/anthropic" }
   ]
 }
