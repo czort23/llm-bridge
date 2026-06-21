@@ -1,14 +1,12 @@
 import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-bridge/core';
 import {
-  LLMBridgeError,
-  NetworkError,
   ProviderError,
-  RetryableError,
+  httpPost,
+  resolveModel,
   responseLines,
+  DEFAULT_RETRYABLE_STATUS_CODES,
 } from '@llm-bridge/core';
 import { fromResponse, toRequest } from './mapping.js';
-
-const RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504];
 
 interface OllamaConfig {
   baseUrl?: string;
@@ -27,12 +25,6 @@ export class OllamaProvider implements LLMProvider {
     this.model = config.model;
   }
 
-  private resolveModel(options: CompletionOptions): string {
-    const model = options.model ?? this.model;
-    if (!model) throw new LLMBridgeError('No model specified');
-    return model;
-  }
-
   private headers(): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -43,37 +35,23 @@ export class OllamaProvider implements LLMProvider {
     return headers;
   }
 
-  private async fetchChat(body: unknown): Promise<Response> {
-    let response: Response;
-    try {
-      response = await fetch(`${this.baseUrl}/api/chat`, {
-        method: 'POST',
+  private async fetchChat(options: CompletionOptions, stream: boolean = false): Promise<Response> {
+    const url = `${this.baseUrl}/api/chat`;
+    const model = resolveModel(options.model, this.model);
+
+    return await httpPost(
+      url,
+      {
         headers: this.headers(),
-        body: JSON.stringify(body),
-      });
-    } catch (error) {
-      throw new NetworkError(`Could not reach Ollama at ${this.baseUrl}: ${String(error)}`);
-    }
-
-    if (!response.ok) {
-      if (RETRYABLE_STATUS_CODES.includes(response.status)) {
-        throw new RetryableError(
-          `Ollama returned ${String(response.status)} ${response.statusText}`,
-          response.status,
-        );
+        body: toRequest({ ...options, model }, stream),
+        retryableCodes: DEFAULT_RETRYABLE_STATUS_CODES,
+        providerName: 'Ollama'
       }
-      throw new ProviderError(
-        `Ollama returned ${String(response.status)} ${response.statusText}`,
-        response.status,
-      );
-    }
-
-    return response;
+    );
   }
 
   async complete(options: CompletionOptions): Promise<CompletionResult> {
-    const model = this.resolveModel(options);
-    const response = await this.fetchChat(toRequest({ ...options, model }));
+    const response = await this.fetchChat(options);
 
     try {
       const data: unknown = await response.json();
@@ -84,8 +62,7 @@ export class OllamaProvider implements LLMProvider {
   }
 
   async *stream(options: CompletionOptions): AsyncIterable<string> {
-    const model = this.resolveModel(options);
-    const response = await this.fetchChat(toRequest({ ...options, model }, true));
+    const response = await this.fetchChat(options, true);
 
     if (!response.body) {
       throw new ProviderError('Ollama returned empty response body', response.status);
