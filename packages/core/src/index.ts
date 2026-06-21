@@ -5,3 +5,5 @@ export type { FallbackOptions } from './fallback.js';
 export { withRetry } from './retry.js';
 export { withFallback } from './fallback.js';
 export { responseLines } from './streaming.js';
+export { resolveModel } from './model.js';
+export { httpPost, DEFAULT_RETRYABLE_STATUS_CODES } from './http.js';
