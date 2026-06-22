@@ -1,4 +1,4 @@
-import type { CompletionOptions, CompletionResult } from '@llm-bridge/core';
+import type { CompletionOptions, CompletionResult } from '@omnillm/core';
 
 interface OllamaResponse {
   message: {

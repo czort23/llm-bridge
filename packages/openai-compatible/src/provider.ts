@@ -1,11 +1,11 @@
-import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-bridge/core';
+import type { CompletionOptions, CompletionResult, LLMProvider } from '@omnillm/core';
 import {
   ProviderError,
   httpPost,
   resolveModel,
   responseLines,
   DEFAULT_RETRYABLE_STATUS_CODES,
-} from '@llm-bridge/core';
+} from '@omnillm/core';
 import { fromResponse, toRequest } from './mapping.js';
 
 export interface OpenAICompatibleConfig {

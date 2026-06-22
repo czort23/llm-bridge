@@ -1,6 +1,6 @@
 import 'dotenv/config';
-import { GeminiProvider } from '@llm-bridge/gemini';
-import type { CompletionOptions } from '@llm-bridge/core';
+import { GeminiProvider } from '@omnillm/gemini';
+import type { CompletionOptions } from '@omnillm/core';
 
 if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is not defined');
 

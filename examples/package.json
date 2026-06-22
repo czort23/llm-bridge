@@ -1,15 +1,15 @@
 {
-  "name": "@llm-bridge/examples",
+  "name": "@omnillm/examples",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@llm-bridge/anthropic": "workspace:*",
-    "@llm-bridge/core": "workspace:*",
-    "@llm-bridge/gemini": "workspace:*",
-    "@llm-bridge/groq": "workspace:*",
-    "@llm-bridge/ollama": "workspace:*",
-    "@llm-bridge/openai": "workspace:*",
-    "@llm-bridge/openai-compatible": "workspace:*"
+    "@omnillm/anthropic": "workspace:*",
+    "@omnillm/core": "workspace:*",
+    "@omnillm/gemini": "workspace:*",
+    "@omnillm/groq": "workspace:*",
+    "@omnillm/ollama": "workspace:*",
+    "@omnillm/openai": "workspace:*",
+    "@omnillm/openai-compatible": "workspace:*"
   }
 }

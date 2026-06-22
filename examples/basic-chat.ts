@@ -1,4 +1,4 @@
-import { OllamaProvider } from '@llm-bridge/ollama';
+import { OllamaProvider } from '@omnillm/ollama';
 
 const provider = new OllamaProvider();
 

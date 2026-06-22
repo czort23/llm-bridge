@@ -1,9 +1,9 @@
 import 'dotenv/config';
-import type { CompletionOptions } from '@llm-bridge/core';
-import { withFallback } from '@llm-bridge/core';
-import { GeminiProvider } from '@llm-bridge/gemini';
-import { GroqProvider } from '@llm-bridge/groq';
-import { OllamaProvider } from '@llm-bridge/ollama';
+import type { CompletionOptions } from '@omnillm/core';
+import { withFallback } from '@omnillm/core';
+import { GeminiProvider } from '@omnillm/gemini';
+import { GroqProvider } from '@omnillm/groq';
+import { OllamaProvider } from '@omnillm/ollama';
 
 if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is not defined');
 if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY is not defined');

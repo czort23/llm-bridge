@@ -1,5 +1,5 @@
 {
-  "name": "@llm-bridge/groq",
+  "name": "@omnillm/groq",
   "version": "0.0.0",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -17,6 +17,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@llm-bridge/openai-compatible": "workspace:*"
+    "@omnillm/openai-compatible": "workspace:*"
   }
 }

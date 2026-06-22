@@ -1,5 +1,5 @@
-import type { CompletionOptions, CompletionResult } from '@llm-bridge/core';
-import { LLMBridgeError } from '@llm-bridge/core';
+import type { CompletionOptions, CompletionResult } from '@omnillm/core';
+import { LLMBridgeError } from '@omnillm/core';
 
 interface AnthropicMessage {
   role: 'user' | 'assistant';
