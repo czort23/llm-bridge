@@ -33,22 +33,19 @@ export class AnthropicProvider implements LLMProvider {
       'Content-Type': 'application/json',
       'anthropic-version': this.anthropicVersion,
       'x-api-key': this.apiKey,
-    }
+    };
   }
 
   private async fetchChat(options: CompletionOptions, stream: boolean = false): Promise<Response> {
     const url = `${this.baseUrl}/messages`;
     const model = resolveModel(options.model, this.model);
 
-    return await httpPost(
-      url,
-      {
-        headers: this.headers(),
-        body: toRequest({ ...options, model }, stream),
-        retryableCodes: [...DEFAULT_RETRYABLE_STATUS_CODES, 529],
-        providerName: 'Anthropic',
-      },
-    );
+    return await httpPost(url, {
+      headers: this.headers(),
+      body: toRequest({ ...options, model }, stream),
+      retryableCodes: [...DEFAULT_RETRYABLE_STATUS_CODES, 529],
+      providerName: 'Anthropic',
+    });
   }
 
   async complete(options: CompletionOptions): Promise<CompletionResult> {

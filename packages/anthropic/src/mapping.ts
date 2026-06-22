@@ -20,7 +20,7 @@ interface AnthropicResponse {
 
 export function toRequest(options: CompletionOptions, stream: boolean = false) {
   const messages: AnthropicMessage[] = [];
-  const system: { text: string, type: 'text' }[] = [];
+  const system: { text: string; type: 'text' }[] = [];
 
   for (const message of options.messages) {
     if (message.role === 'system') {

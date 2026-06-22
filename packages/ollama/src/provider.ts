@@ -39,15 +39,12 @@ export class OllamaProvider implements LLMProvider {
     const url = `${this.baseUrl}/api/chat`;
     const model = resolveModel(options.model, this.model);
 
-    return await httpPost(
-      url,
-      {
-        headers: this.headers(),
-        body: toRequest({ ...options, model }, stream),
-        retryableCodes: DEFAULT_RETRYABLE_STATUS_CODES,
-        providerName: 'Ollama'
-      }
-    );
+    return await httpPost(url, {
+      headers: this.headers(),
+      body: toRequest({ ...options, model }, stream),
+      retryableCodes: DEFAULT_RETRYABLE_STATUS_CODES,
+      providerName: 'Ollama',
+    });
   }
 
   async complete(options: CompletionOptions): Promise<CompletionResult> {

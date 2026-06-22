@@ -29,23 +29,24 @@ export class GeminiProvider implements LLMProvider {
     return {
       'Content-Type': 'application/json',
       'x-goog-api-key': this.apiKey,
-    }
+    };
   }
 
-  private async fetchChat(model: string, options: CompletionOptions, stream: boolean = false): Promise<Response> {
+  private async fetchChat(
+    model: string,
+    options: CompletionOptions,
+    stream: boolean = false,
+  ): Promise<Response> {
     const url = stream
       ? `${this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`
       : `${this.baseUrl}/models/${model}:generateContent`;
 
-    return await httpPost(
-      url,
-      {
-        headers: this.headers(),
-        body: toRequest(options),
-        retryableCodes: DEFAULT_RETRYABLE_STATUS_CODES,
-        providerName: 'Gemini',
-      },
-    );
+    return await httpPost(url, {
+      headers: this.headers(),
+      body: toRequest(options),
+      retryableCodes: DEFAULT_RETRYABLE_STATUS_CODES,
+      providerName: 'Gemini',
+    });
   }
 
   async complete(options: CompletionOptions): Promise<CompletionResult> {

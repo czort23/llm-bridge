@@ -32,7 +32,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
     return {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${this.apiKey}`,
-    }
+    };
   }
 
   protected get retryableCodes(): readonly number[] {
@@ -58,7 +58,10 @@ export class OpenAICompatibleProvider implements LLMProvider {
       const data: unknown = await response.json();
       return fromResponse(data, this.providerName);
     } catch (error) {
-      throw new ProviderError(`${this.providerName} returned invalid JSON: ${String(error)}`, response.status);
+      throw new ProviderError(
+        `${this.providerName} returned invalid JSON: ${String(error)}`,
+        response.status,
+      );
     }
   }
 

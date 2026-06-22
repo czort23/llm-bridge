@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@llm-bridge/anthropic": "workspace:*",
     "@llm-bridge/core": "workspace:*",
-    "@llm-bridge/ollama": "workspace:*",
     "@llm-bridge/gemini": "workspace:*",
     "@llm-bridge/groq": "workspace:*",
+    "@llm-bridge/ollama": "workspace:*",
     "@llm-bridge/openai": "workspace:*",
-    "@llm-bridge/anthropic": "workspace:*",
     "@llm-bridge/openai-compatible": "workspace:*"
   }
 }
