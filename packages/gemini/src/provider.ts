@@ -1,14 +1,12 @@
 import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-bridge/core';
 import {
-  LLMBridgeError,
-  NetworkError,
   ProviderError,
-  RetryableError,
+  httpPost,
+  resolveModel,
   responseLines,
+  DEFAULT_RETRYABLE_STATUS_CODES,
 } from '@llm-bridge/core';
 import { fromResponse, toRequest } from './mapping.js';
-
-const RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504];
 
 interface GeminiConfig {
   baseUrl?: string;
@@ -27,47 +25,32 @@ export class GeminiProvider implements LLMProvider {
     this.model = config.model;
   }
 
-  private resolveModel(options: CompletionOptions): string {
-    const model = options.model ?? this.model;
-    if (!model) throw new LLMBridgeError('No model specified');
-    return model;
+  private headers(): Record<string, string> {
+    return {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': this.apiKey,
+    }
   }
 
-  private async fetchChat(url: string, body: unknown): Promise<Response> {
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': this.apiKey,
-        },
-        body: JSON.stringify(body),
-      });
-    } catch (error) {
-      throw new NetworkError(`Could not reach Gemini at ${this.baseUrl}: ${String(error)}`);
-    }
+  private async fetchChat(model: string, options: CompletionOptions, stream: boolean = false): Promise<Response> {
+    const url = stream
+      ? `${this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`
+      : `${this.baseUrl}/models/${model}:generateContent`;
 
-    if (!response.ok) {
-      if (RETRYABLE_STATUS_CODES.includes(response.status)) {
-        throw new RetryableError(
-          `Gemini returned ${String(response.status)} ${response.statusText}`,
-          response.status,
-        );
-      }
-      throw new ProviderError(
-        `Gemini returned ${String(response.status)} ${response.statusText}`,
-        response.status,
-      );
-    }
-
-    return response;
+    return await httpPost(
+      url,
+      {
+        headers: this.headers(),
+        body: toRequest(options),
+        retryableCodes: DEFAULT_RETRYABLE_STATUS_CODES,
+        providerName: 'Gemini',
+      },
+    );
   }
 
   async complete(options: CompletionOptions): Promise<CompletionResult> {
-    const model = this.resolveModel(options);
-    const url = `${this.baseUrl}/models/${model}:generateContent`;
-    const response = await this.fetchChat(url, toRequest(options));
+    const model = resolveModel(options.model, this.model);
+    const response = await this.fetchChat(model, options);
 
     try {
       const data: unknown = await response.json();
@@ -78,9 +61,8 @@ export class GeminiProvider implements LLMProvider {
   }
 
   async *stream(options: CompletionOptions): AsyncIterable<string> {
-    const model = this.resolveModel(options);
-    const url = `${this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`;
-    const response = await this.fetchChat(url, toRequest(options));
+    const model = resolveModel(options.model, this.model);
+    const response = await this.fetchChat(model, options, true);
 
     if (!response.body) {
       throw new ProviderError('Gemini returned empty response body', response.status);
