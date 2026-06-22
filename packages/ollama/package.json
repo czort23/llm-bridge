@@ -1,6 +1,24 @@
 {
   "name": "@omnillm/ollama",
   "version": "0.0.0",
+  "description": "Ollama provider for omnillm — a unified TypeScript client for LLM providers.",
+  "keywords": [
+    "llm",
+    "ai",
+    "typescript",
+    "omnillm",
+    "ollama",
+    "local"
+  ],
+  "license": "MIT",
+  "author": "Adrian Załubski <czort.coding+omnillm@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/czort23/omnillm.git",
+    "directory": "packages/ollama"
+  },
+  "homepage": "https://github.com/czort23/omnillm#readme",
+  "bugs": "https://github.com/czort23/omnillm/issues",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -11,6 +29,12 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs",
