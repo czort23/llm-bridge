@@ -17,6 +17,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@llm-bridge/core": "workspace:*"
+    "@llm-bridge/openai-compatible": "workspace:*"
   }
 }
