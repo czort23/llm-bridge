@@ -53,6 +53,9 @@ importers:
       '@llm-bridge/openai':
         specifier: workspace:*
         version: link:../packages/openai
+      '@llm-bridge/openai-compatible':
+        specifier: workspace:*
+        version: link:../packages/openai-compatible
 
   packages/anthropic:
     dependencies:
@@ -70,9 +73,9 @@ importers:
 
   packages/groq:
     dependencies:
-      '@llm-bridge/core':
+      '@llm-bridge/openai-compatible':
         specifier: workspace:*
-        version: link:../core
+        version: link:../openai-compatible
 
   packages/ollama:
     dependencies:
@@ -81,6 +84,12 @@ importers:
         version: link:../core
 
   packages/openai:
+    dependencies:
+      '@llm-bridge/openai-compatible':
+        specifier: workspace:*
+        version: link:../openai-compatible
+
+  packages/openai-compatible:
     dependencies:
       '@llm-bridge/core':
         specifier: workspace:*

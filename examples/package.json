@@ -9,6 +9,7 @@
     "@llm-bridge/gemini": "workspace:*",
     "@llm-bridge/groq": "workspace:*",
     "@llm-bridge/openai": "workspace:*",
-    "@llm-bridge/anthropic": "workspace:*"
+    "@llm-bridge/anthropic": "workspace:*",
+    "@llm-bridge/openai-compatible": "workspace:*"
   }
 }

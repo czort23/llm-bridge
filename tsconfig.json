@@ -6,6 +6,7 @@
     { "path": "./packages/gemini" },
     { "path": "./packages/groq" },
     { "path": "./packages/openai" },
-    { "path": "./packages/anthropic" }
+    { "path": "./packages/anthropic" },
+    { "path": "./packages/openai-compatible" }
   ]
 }

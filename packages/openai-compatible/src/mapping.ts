@@ -1,7 +1,7 @@
 import type { CompletionOptions, CompletionResult } from '@llm-bridge/core';
 import { LLMBridgeError } from '@llm-bridge/core';
 
-interface OpenAIResponse {
+interface OpenAICompatibleResponse {
   choices: {
     message: {
       content: string;
@@ -24,17 +24,17 @@ export function toRequest(options: CompletionOptions, stream: boolean = false) {
   };
 }
 
-export function fromResponse(data: unknown): CompletionResult {
-  const response = data as OpenAIResponse;
+export function fromResponse(data: unknown, providerName: string): CompletionResult {
+  const response = data as OpenAICompatibleResponse;
   const text = response.choices[0]?.message.content;
   if (text === undefined) {
-    throw new LLMBridgeError('OpenAI returned no content (possibly blocked or empty response)');
+    throw new LLMBridgeError(`${providerName} returned no content (possibly blocked or empty response)`);
   }
 
   return {
     content: text,
     model: response.model,
-    provider: 'openai',
+    provider: providerName.toLowerCase(),
     usage: {
       inputTokens: response.usage.prompt_tokens,
       outputTokens: response.usage.completion_tokens,

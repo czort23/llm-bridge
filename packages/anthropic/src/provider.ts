@@ -1,14 +1,12 @@
 import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-bridge/core';
 import {
-  LLMBridgeError,
-  NetworkError,
   ProviderError,
-  RetryableError,
+  httpPost,
+  resolveModel,
   responseLines,
+  DEFAULT_RETRYABLE_STATUS_CODES,
 } from '@llm-bridge/core';
 import { fromResponse, toRequest } from './mapping.js';
-
-const RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504, 529];
 
 interface AnthropicConfig {
   baseUrl?: string;
@@ -30,47 +28,31 @@ export class AnthropicProvider implements LLMProvider {
     this.anthropicVersion = config.anthropicVersion ?? '2023-06-01';
   }
 
-  private resolveModel(options: CompletionOptions): string {
-    const model = options.model ?? this.model;
-    if (!model) throw new LLMBridgeError('No model specified');
-    return model;
+  private headers(): Record<string, string> {
+    return {
+      'Content-Type': 'application/json',
+      'anthropic-version': this.anthropicVersion,
+      'x-api-key': this.apiKey,
+    }
   }
 
-  private async fetchChat(body: unknown): Promise<Response> {
-    let response: Response;
-    try {
-      response = await fetch(`${this.baseUrl}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'anthropic-version': this.anthropicVersion,
-          'x-api-key': this.apiKey,
-        },
-        body: JSON.stringify(body),
-      });
-    } catch (error) {
-      throw new NetworkError(`Could not reach Anthropic at ${this.baseUrl}: ${String(error)}`);
-    }
+  private async fetchChat(options: CompletionOptions, stream: boolean = false): Promise<Response> {
+    const url = `${this.baseUrl}/messages`;
+    const model = resolveModel(options.model, this.model);
 
-    if (!response.ok) {
-      if (RETRYABLE_STATUS_CODES.includes(response.status)) {
-        throw new RetryableError(
-          `Anthropic returned ${String(response.status)} ${response.statusText}`,
-          response.status
-        );
-      }
-      throw new ProviderError(
-        `Anthropic returned ${String(response.status)} ${response.statusText}`,
-        response.status,
-      );
-    }
-
-    return response;
+    return await httpPost(
+      url,
+      {
+        headers: this.headers(),
+        body: toRequest({ ...options, model }, stream),
+        retryableCodes: [...DEFAULT_RETRYABLE_STATUS_CODES, 529],
+        providerName: 'Anthropic',
+      },
+    );
   }
 
   async complete(options: CompletionOptions): Promise<CompletionResult> {
-    const model = this.resolveModel(options);
-    const response = await this.fetchChat(toRequest({ ...options, model }));
+    const response = await this.fetchChat(options);
 
     try {
       const data: unknown = await response.json();
@@ -81,8 +63,7 @@ export class AnthropicProvider implements LLMProvider {
   }
 
   async *stream(options: CompletionOptions): AsyncIterable<string> {
-    const model = this.resolveModel(options);
-    const response = await this.fetchChat(toRequest({ ...options, model }, true ));
+    const response = await this.fetchChat(options, true);
 
     if (!response.body) {
       throw new ProviderError('Anthropic returned empty response body', response.status);
