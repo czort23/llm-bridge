@@ -8,11 +8,13 @@ afterEach(() => {
 
 describe('OpenAICompatibleProvider', () => {
   it('calls complete successfully', async () => {
-    const fakeResponse = new Response(JSON.stringify({
-      choices: [{ message: { content: 'hi' } }],
-      model: 'mockModel',
-      usage: { prompt_tokens: 16, completion_tokens: 64 },
-    }));
+    const fakeResponse = new Response(
+      JSON.stringify({
+        choices: [{ message: { content: 'hi' } }],
+        model: 'mockModel',
+        usage: { prompt_tokens: 16, completion_tokens: 64 },
+      }),
+    );
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fakeResponse));
 
     const provider = new OpenAICompatibleProvider({
@@ -50,7 +52,9 @@ describe('OpenAICompatibleProvider', () => {
       providerName: 'MockProvider',
     });
 
-    await expect(provider.complete({ messages: [{ role: 'user', content: 'hi' }] })).rejects.toThrow(ProviderError);
+    await expect(
+      provider.complete({ messages: [{ role: 'user', content: 'hi' }] }),
+    ).rejects.toThrow(ProviderError);
   });
 
   it('calls stream successfully', async () => {
@@ -87,15 +91,13 @@ describe('OpenAICompatibleProvider', () => {
     });
 
     await expect(async () => {
-      for await (const _ of provider.stream({ messages: [{ role: 'user', content: 'hi' }] })) {}
+      for await (const _ of provider.stream({ messages: [{ role: 'user', content: 'hi' }] })) {
+      }
     }).rejects.toThrow(ProviderError);
   });
 
   it("yields '' on missing delta", async () => {
-    const sse = [
-      'data: {"choices":[{"delta":{}}]}',
-      'data: [DONE]',
-    ].join('\n');
+    const sse = ['data: {"choices":[{"delta":{}}]}', 'data: [DONE]'].join('\n');
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(sse)));
 
     const provider = new OpenAICompatibleProvider({

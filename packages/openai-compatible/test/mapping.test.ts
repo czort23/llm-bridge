@@ -19,7 +19,10 @@ describe('toRequest/fromResponse', () => {
   });
 
   it('sets stream when requested', () => {
-    const request = toRequest({ model: 'mockModel', messages: [{ role: 'user', content: 'hi' }] }, true);
+    const request = toRequest(
+      { model: 'mockModel', messages: [{ role: 'user', content: 'hi' }] },
+      true,
+    );
     expect(request.stream).toBe(true);
   });
 
@@ -30,7 +33,7 @@ describe('toRequest/fromResponse', () => {
         model: 'mockModel',
         usage: { prompt_tokens: 16, completion_tokens: 64 },
       },
-      'MockProvider'
+      'MockProvider',
     );
 
     expect(response.content).toBe('hi');
@@ -43,7 +46,7 @@ describe('toRequest/fromResponse', () => {
     expect(() =>
       fromResponse(
         { choices: [], model: 'mockModel', usage: { prompt_tokens: 16, completion_tokens: 64 } },
-        'MockProvider'
+        'MockProvider',
       ),
     ).toThrow(LLMBridgeError);
   });

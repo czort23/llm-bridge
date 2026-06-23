@@ -17,7 +17,7 @@ describe('toRequest/fromResponse', () => {
     expect(request.generationConfig).toEqual({ temperature: 0.7, maxOutputTokens: 128 });
   });
 
-  it("maps assistant role to model role", () => {
+  it('maps assistant role to model role', () => {
     const request = toRequest({
       messages: [{ role: 'assistant', content: 'hi' }],
     });
@@ -39,7 +39,7 @@ describe('toRequest/fromResponse', () => {
         candidates: [{ content: { parts: [{ text: 'hi' }] } }],
         usageMetadata: { promptTokenCount: 16, candidatesTokenCount: 64 },
       },
-      'mockModel'
+      'mockModel',
     );
 
     expect(response.content).toBe('hi');

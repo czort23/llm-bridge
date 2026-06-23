@@ -8,12 +8,14 @@ afterEach(() => {
 
 describe('OllamaProvider', () => {
   it('calls complete successfully', async () => {
-    const fakeResponse = new Response(JSON.stringify({
-      message: { content: 'hi' },
-      model: 'mockModel',
-      prompt_eval_count: 16,
-      eval_count: 64,
-    }));
+    const fakeResponse = new Response(
+      JSON.stringify({
+        message: { content: 'hi' },
+        model: 'mockModel',
+        prompt_eval_count: 16,
+        eval_count: 64,
+      }),
+    );
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fakeResponse));
 
     const provider = new OllamaProvider({
@@ -50,7 +52,9 @@ describe('OllamaProvider', () => {
       model: 'mockModel',
     });
 
-    await expect(provider.complete({ messages: [{ role: 'user', content: 'hi' }] })).rejects.toThrow(ProviderError);
+    await expect(
+      provider.complete({ messages: [{ role: 'user', content: 'hi' }] }),
+    ).rejects.toThrow(ProviderError);
   });
 
   it('calls stream successfully', async () => {
@@ -84,14 +88,13 @@ describe('OllamaProvider', () => {
     });
 
     await expect(async () => {
-      for await (const _ of provider.stream({ messages: [{ role: 'user', content: 'hi' }] })) {}
+      for await (const _ of provider.stream({ messages: [{ role: 'user', content: 'hi' }] })) {
+      }
     }).rejects.toThrow(ProviderError);
   });
 
   it("yields '' on missing delta", async () => {
-    const sse = [
-      '{"message":{},"done":true}\n',
-    ].join('\n');
+    const sse = ['{"message":{},"done":true}\n'].join('\n');
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(sse)));
 
     const provider = new OllamaProvider({

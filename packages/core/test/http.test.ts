@@ -87,7 +87,9 @@ describe('httpPost', () => {
   it('respects a custom retryableCodes list', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(new Response('teapot', { status: 418, statusText: "I'm a teapot" })),
+      vi
+        .fn()
+        .mockResolvedValue(new Response('teapot', { status: 418, statusText: "I'm a teapot" })),
     );
 
     await expect(

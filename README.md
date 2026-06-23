@@ -81,8 +81,8 @@ for await (const chunk of provider.stream({
 
 ## Providers
 
-| Provider  | Package                 | Class               | Notes                           |
-| --------- | ----------------------- | ------------------- | ------------------------------- |
+| Provider  | Package              | Class               | Notes                           |
+| --------- | -------------------- |---------------------| ------------------------------- |
 | OpenAI    | `@omnillm/openai`    | `OpenAIProvider`    |                                 |
 | Anthropic | `@omnillm/anthropic` | `AnthropicProvider` | `max_tokens` defaults to 4096   |
 | Gemini    | `@omnillm/gemini`    | `GeminiProvider`    |                                 |

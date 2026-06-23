@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { toRequest, fromResponse } from '../src/mapping.js';
-import {LLMBridgeError} from "@omnillm/core";
+import { LLMBridgeError } from '@omnillm/core';
 
 describe('toRequest/fromResponse', () => {
   it("maps CompletionOptions to provider's format", () => {
@@ -18,7 +18,10 @@ describe('toRequest/fromResponse', () => {
   });
 
   it('sets stream when requested', () => {
-    const request = toRequest({ model: 'mockModel', messages: [{ role: 'user', content: 'hi' }] }, true);
+    const request = toRequest(
+      { model: 'mockModel', messages: [{ role: 'user', content: 'hi' }] },
+      true,
+    );
     expect(request.stream).toBe(true);
   });
 
@@ -37,8 +40,6 @@ describe('toRequest/fromResponse', () => {
   });
 
   it('throws when content is missing', () => {
-    expect(() =>
-      fromResponse({ message: {}, model: 'mockModel' }),
-    ).toThrow(LLMBridgeError);
+    expect(() => fromResponse({ message: {}, model: 'mockModel' })).toThrow(LLMBridgeError);
   });
 });

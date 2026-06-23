@@ -8,11 +8,13 @@ afterEach(() => {
 
 describe('AnthropicProvider', () => {
   it('calls complete successfully', async () => {
-    const fakeResponse = new Response(JSON.stringify({
-      content: [{ type: 'text', text: 'hi' }],
-      model: 'mockModel',
-      usage: { input_tokens: 16, output_tokens: 64 },
-    }));
+    const fakeResponse = new Response(
+      JSON.stringify({
+        content: [{ type: 'text', text: 'hi' }],
+        model: 'mockModel',
+        usage: { input_tokens: 16, output_tokens: 64 },
+      }),
+    );
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fakeResponse));
 
     const provider = new AnthropicProvider({
@@ -48,7 +50,9 @@ describe('AnthropicProvider', () => {
       model: 'mockModel',
     });
 
-    await expect(provider.complete({ messages: [{ role: 'user', content: 'hi' }] })).rejects.toThrow(ProviderError);
+    await expect(
+      provider.complete({ messages: [{ role: 'user', content: 'hi' }] }),
+    ).rejects.toThrow(ProviderError);
   });
 
   it('calls stream successfully', async () => {
@@ -84,7 +88,8 @@ describe('AnthropicProvider', () => {
     });
 
     await expect(async () => {
-      for await (const _ of provider.stream({ messages: [{ role: 'user', content: 'hi' }] })) {}
+      for await (const _ of provider.stream({ messages: [{ role: 'user', content: 'hi' }] })) {
+      }
     }).rejects.toThrow(ProviderError);
   });
 

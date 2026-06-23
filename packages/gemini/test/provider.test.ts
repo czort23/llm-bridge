@@ -8,13 +8,15 @@ afterEach(() => {
 
 describe('GeminiProvider', () => {
   it('calls complete successfully', async () => {
-    const fakeResponse = new Response(JSON.stringify({
-      candidates: [{ content: { parts: [{ text: 'hi' }] } }],
-      usageMetadata: {
-        promptTokenCount: 16,
-        candidatesTokenCount: 64,
-      },
-    }));
+    const fakeResponse = new Response(
+      JSON.stringify({
+        candidates: [{ content: { parts: [{ text: 'hi' }] } }],
+        usageMetadata: {
+          promptTokenCount: 16,
+          candidatesTokenCount: 64,
+        },
+      }),
+    );
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fakeResponse));
 
     const provider = new GeminiProvider({
@@ -52,7 +54,9 @@ describe('GeminiProvider', () => {
       model: 'mockModel',
     });
 
-    await expect(provider.complete({ messages: [{ role: 'user', content: 'hi' }] })).rejects.toThrow(ProviderError);
+    await expect(
+      provider.complete({ messages: [{ role: 'user', content: 'hi' }] }),
+    ).rejects.toThrow(ProviderError);
   });
 
   it('calls stream successfully', async () => {
@@ -86,14 +90,13 @@ describe('GeminiProvider', () => {
     });
 
     await expect(async () => {
-      for await (const _ of provider.stream({ messages: [{ role: 'user', content: 'hi' }] })) {}
+      for await (const _ of provider.stream({ messages: [{ role: 'user', content: 'hi' }] })) {
+      }
     }).rejects.toThrow(ProviderError);
   });
 
   it("yields '' on missing delta", async () => {
-    const sse = [
-      'data: {"candidates":[]}\n',
-    ].join('\n');
+    const sse = ['data: {"candidates":[]}\n'].join('\n');
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(sse)));
 
     const provider = new GeminiProvider({

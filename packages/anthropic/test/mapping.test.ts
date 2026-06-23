@@ -21,7 +21,10 @@ describe('toRequest/fromResponse', () => {
 
   it("maps CompletionOptions to provider's format with system message", () => {
     const request = toRequest({
-      messages: [{ role: 'user', content: 'hi' }, { role: 'system', content: 'test' }],
+      messages: [
+        { role: 'user', content: 'hi' },
+        { role: 'system', content: 'test' },
+      ],
     });
 
     expect(request.messages[0]).toEqual({ role: 'user', content: 'hi' });
@@ -34,7 +37,10 @@ describe('toRequest/fromResponse', () => {
   });
 
   it('sets stream when requested', () => {
-    const request = toRequest({ model: 'mockModel', messages: [{ role: 'user', content: 'hi' }] }, true);
+    const request = toRequest(
+      { model: 'mockModel', messages: [{ role: 'user', content: 'hi' }] },
+      true,
+    );
     expect(request.stream).toBe(true);
   });
 
@@ -52,8 +58,6 @@ describe('toRequest/fromResponse', () => {
   });
 
   it('throws when content is missing', () => {
-    expect(() =>
-      fromResponse({ content: [], model: 'mockModel' }),
-    ).toThrow(LLMBridgeError);
+    expect(() => fromResponse({ content: [], model: 'mockModel' })).toThrow(LLMBridgeError);
   });
 });
