@@ -66,8 +66,8 @@ export class OllamaProvider implements LLMProvider {
     }
 
     for await (const line of responseLines(response.body)) {
-      const chunk = JSON.parse(line) as { message: { content: string }; done: boolean };
-      yield chunk.message.content;
+      const chunk = JSON.parse(line) as { message: { content?: string }; done: boolean };
+      yield chunk.message.content ?? '';
       if (chunk.done) break;
     }
   }

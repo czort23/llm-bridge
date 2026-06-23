@@ -1,8 +1,9 @@
 import type { CompletionOptions, CompletionResult } from '@omnillm/core';
+import { LLMBridgeError } from '@omnillm/core';
 
 interface OllamaResponse {
   message: {
-    content: string;
+    content?: string;
   };
   model: string;
   prompt_eval_count: number;
@@ -23,8 +24,13 @@ export function toRequest(options: CompletionOptions, stream: boolean = false) {
 
 export function fromResponse(data: unknown): CompletionResult {
   const response = data as OllamaResponse;
+  const text = response.message.content;
+  if (text === undefined) {
+    throw new LLMBridgeError('Ollama returned no content (possibly blocked or empty response)');
+  }
+
   return {
-    content: response.message.content,
+    content: text,
     model: response.model,
     provider: 'ollama',
     usage: {
