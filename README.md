@@ -104,6 +104,22 @@ new OpenAIProvider({
 
 The `model` can be set once on the provider, or per call via `CompletionOptions.model` (the per-call value wins). At least one must be present, or the call throws.
 
+### Other OpenAI-compatible endpoints
+
+Many services (Together, Fireworks, OpenRouter, DeepSeek, a local vLLM or LM Studio server, …) speak the OpenAI Chat Completions API. For any of these you don't need a dedicated package — use `OpenAICompatibleProvider` directly, passing the endpoint's `baseUrl` and a `providerName` (used in error messages and on the result's `provider` field):
+
+```ts
+import { OpenAICompatibleProvider } from '@omnillm/openai-compatible';
+
+const provider = new OpenAICompatibleProvider({
+  baseUrl: 'https://api.together.xyz/v1',
+  apiKey: process.env.TOGETHER_API_KEY,
+  providerName: 'Together',
+});
+```
+
+`OpenAIProvider` and `GroqProvider` are just thin wrappers over this base with their `baseUrl` and `providerName` pre-filled.
+
 ## Core types
 
 ```ts
