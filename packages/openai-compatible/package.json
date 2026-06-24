@@ -1,6 +1,6 @@
 {
   "name": "@omnillm/openai-compatible",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Base provider and Chat Completions mapping for OpenAI-compatible APIs (omnillm).",
   "keywords": [
     "llm",

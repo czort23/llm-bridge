@@ -1,6 +1,6 @@
 {
   "name": "@omnillm/anthropic",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Anthropic (Claude) provider for omnillm — a unified TypeScript client for LLM providers.",
   "keywords": [
     "llm",

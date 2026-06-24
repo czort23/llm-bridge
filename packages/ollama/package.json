@@ -1,6 +1,6 @@
 {
   "name": "@omnillm/ollama",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Ollama provider for omnillm — a unified TypeScript client for LLM providers.",
   "keywords": [
     "llm",
