@@ -1,89 +1,80 @@
-import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-bridge/core';
-import { NetworkError, ProviderError, RetryableError } from "@llm-bridge/core";
-import { fromResponse, toRequest } from "./mapping.js";
+import type { CompletionOptions, CompletionResult, LLMProvider } from '@omnillm/core';
+import {
+  ProviderError,
+  httpPost,
+  resolveModel,
+  responseLines,
+  DEFAULT_RETRYABLE_STATUS_CODES,
+} from '@omnillm/core';
+import { fromResponse, toRequest } from './mapping.js';
 
 interface GeminiConfig {
-    baseUrl?: string;
-    apiKey: string;
-}
-
-async function* responseLines(body: ReadableStream<Uint8Array>): AsyncIterable<string> {
-    const reader = body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-        for (const line of lines) {
-            if (line.trim()) yield line;
-        }
-    }
+  baseUrl?: string;
+  apiKey: string;
+  model?: string;
 }
 
 export class GeminiProvider implements LLMProvider {
-    private readonly baseUrl: string;
-    private readonly apiKey: string
+  private readonly baseUrl: string;
+  private readonly apiKey: string;
+  private readonly model?: string;
 
-    constructor(config: GeminiConfig) {
-        this.baseUrl = config.baseUrl ?? 'https://generativelanguage.googleapis.com/v1';
-        this.apiKey = config.apiKey;
+  constructor(config: GeminiConfig) {
+    this.baseUrl = config.baseUrl ?? 'https://generativelanguage.googleapis.com/v1';
+    this.apiKey = config.apiKey;
+    this.model = config.model;
+  }
+
+  private headers(): Record<string, string> {
+    return {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': this.apiKey,
+    };
+  }
+
+  private async fetchChat(
+    model: string,
+    options: CompletionOptions,
+    stream: boolean = false,
+  ): Promise<Response> {
+    const url = stream
+      ? `${this.baseUrl}/models/${model}:streamGenerateContent?alt=sse`
+      : `${this.baseUrl}/models/${model}:generateContent`;
+
+    return await httpPost(url, {
+      headers: this.headers(),
+      body: toRequest(options),
+      retryableCodes: DEFAULT_RETRYABLE_STATUS_CODES,
+      providerName: 'Gemini',
+    });
+  }
+
+  async complete(options: CompletionOptions): Promise<CompletionResult> {
+    const model = resolveModel(options.model, this.model);
+    const response = await this.fetchChat(model, options);
+
+    try {
+      const data: unknown = await response.json();
+      return fromResponse(data, model);
+    } catch (error) {
+      throw new ProviderError(`Gemini returned invalid JSON: ${String(error)}`, response.status);
+    }
+  }
+
+  async *stream(options: CompletionOptions): AsyncIterable<string> {
+    const model = resolveModel(options.model, this.model);
+    const response = await this.fetchChat(model, options, true);
+
+    if (!response.body) {
+      throw new ProviderError('Gemini returned empty response body', response.status);
     }
 
-    private async fetchChat(url: string, body:unknown): Promise<Response> {
-        let response: Response;
-        try {
-            response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-goog-api-key': this.apiKey,
-                },
-                body: JSON.stringify(body),
-            });
-        } catch {
-            throw new NetworkError(`Could not reach Gemini at ${this.baseUrl}`);
-        }
-
-        if (!response.ok) {
-            if ([429, 500, 502, 503, 504].includes(response.status)) {
-                throw new RetryableError('Gemini returned ' + String(response.status), response.status);
-            }
-            throw new ProviderError('Gemini returned ' + String(response.status), response.status);
-        }
-
-        return response;
+    for await (const line of responseLines(response.body)) {
+      if (!line.startsWith('data: ')) continue;
+      const chunk = JSON.parse(line.slice(6)) as {
+        candidates: { content: { parts: { text: string }[] } }[];
+      };
+      yield chunk.candidates[0]?.content.parts[0]?.text ?? '';
     }
-
-    async complete(options: CompletionOptions): Promise<CompletionResult> {
-        const url = `${this.baseUrl}/models/${options.model}:generateContent`;
-        const response = await this.fetchChat(url, toRequest(options));
-
-        let data: unknown;
-        try {
-            data = await response.json();
-        } catch {
-            throw new ProviderError('Gemini returned invalid JSON', response.status);
-        }
-
-        return fromResponse(data, options.model);
-    }
-
-    async *stream(options: CompletionOptions): AsyncIterable<string> {
-        const url = `${this.baseUrl}/models/${options.model}:streamGenerateContent?alt=sse`;
-        const response = await this.fetchChat(url, toRequest(options));
-
-        if (!response.body) {
-            throw new ProviderError('Gemini returned empty response body', response.status);
-        }
-
-        for await (const line of responseLines(response.body)) {
-            if (!line.startsWith('data: ')) continue;
-            const chunk = JSON.parse(line.slice(6)) as { candidates: { content: { parts: { text: string }[] } }[] };
-            yield chunk.candidates[0]?.content.parts[0]?.text ?? '';
-        }
-    }
+  }
 }

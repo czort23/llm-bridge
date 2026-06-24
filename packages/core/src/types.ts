@@ -1,23 +1,23 @@
 export interface Message {
-    role: 'user' | 'assistant' | 'system';
-    content: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
 }
 
 export interface CompletionOptions {
-    model: string;
-    messages: Message[];
-    temperature?: number;
-    maxTokens?: number;
+  model?: string;
+  messages: Message[];
+  temperature?: number;
+  maxTokens?: number;
 }
 
 export interface CompletionResult {
-    content: string;
-    model: string;
-    provider: string;
-    usage?: { inputTokens: number; outputTokens: number };
+  content: string;
+  model: string;
+  provider: string;
+  usage?: { inputTokens: number; outputTokens: number };
 }
 
 export interface LLMProvider {
-    complete(options: CompletionOptions): Promise<CompletionResult>;
-    stream(options: CompletionOptions): AsyncIterable<string>;
+  complete(options: CompletionOptions): Promise<CompletionResult>;
+  stream(options: CompletionOptions): AsyncIterable<string>;
 }

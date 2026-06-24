@@ -1,6 +1,24 @@
 {
-  "name": "@llm-bridge/gemini",
-  "version": "0.0.0",
+  "name": "@omnillm/gemini",
+  "version": "0.1.0",
+  "description": "Google Gemini provider for omnillm — a unified TypeScript client for LLM providers.",
+  "keywords": [
+    "llm",
+    "ai",
+    "typescript",
+    "omnillm",
+    "gemini",
+    "google"
+  ],
+  "license": "MIT",
+  "author": "Adrian Załubski <czort.coding+omnillm@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/czort23/omnillm.git",
+    "directory": "packages/gemini"
+  },
+  "homepage": "https://github.com/czort23/omnillm#readme",
+  "bugs": "https://github.com/czort23/omnillm/issues",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -12,11 +30,24 @@
       "require": "./dist/index.cjs"
     }
   },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+      }
+    }
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@llm-bridge/core": "workspace:*"
+    "@omnillm/core": "workspace:*"
   }
 }
