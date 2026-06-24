@@ -1,8 +1,14 @@
 import { describe, it, vi, afterEach, expect } from 'vitest';
-import { NetworkError, ProviderError, RetryableError, httpPost, DEFAULT_RETRYABLE_STATUS_CODES } from '../src';
+import {
+  NetworkError,
+  ProviderError,
+  RetryableError,
+  httpPost,
+  DEFAULT_RETRYABLE_STATUS_CODES,
+} from '../src';
 
 afterEach(() => {
-  vi.unstubAllGlobals()
+  vi.unstubAllGlobals();
 });
 
 describe('httpPost', () => {
@@ -24,19 +30,17 @@ describe('httpPost', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('fail')));
 
     await expect(
-        httpPost('https://api.example.com', {
+      httpPost('https://api.example.com', {
         headers: {},
         body: {},
         retryableCodes: DEFAULT_RETRYABLE_STATUS_CODES,
         providerName: 'mockProvider',
-      })
+      }),
     ).rejects.toThrow(NetworkError);
   });
 
   it('throws RetryableError for retryable status codes', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
-      new Response('fail', { status: 429 })
-    ));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('fail', { status: 429 })));
 
     const error = await httpPost('https://api.example.com', {
       headers: {},
@@ -50,9 +54,7 @@ describe('httpPost', () => {
   });
 
   it('throws ProviderError for non-retryable status codes', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
-      new Response('fail', { status: 400 })
-    ));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('fail', { status: 400 })));
 
     const error = await httpPost('https://api.example.com', {
       headers: {},
@@ -67,9 +69,10 @@ describe('httpPost', () => {
   });
 
   it('includes response body in thrown message', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
-      new Response('fail', { status: 400, statusText: 'Bad Request' })
-    ));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('fail', { status: 400, statusText: 'Bad Request' })),
+    );
 
     await expect(
       httpPost('https://api.example.com', {
@@ -77,14 +80,17 @@ describe('httpPost', () => {
         body: {},
         retryableCodes: DEFAULT_RETRYABLE_STATUS_CODES,
         providerName: 'mockProvider',
-      })
+      }),
     ).rejects.toThrow('mockProvider returned 400 Bad Request: fail');
   });
 
   it('respects a custom retryableCodes list', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
-      new Response('teapot', { status: 418, statusText: "I'm a teapot" })
-    ));
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(new Response('teapot', { status: 418, statusText: "I'm a teapot" })),
+    );
 
     await expect(
       httpPost('https://api.example.com', {
@@ -92,7 +98,7 @@ describe('httpPost', () => {
         body: {},
         retryableCodes: [418],
         providerName: 'mockProvider',
-      })
+      }),
     ).rejects.toThrow(RetryableError);
   });
 });

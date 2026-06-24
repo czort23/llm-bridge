@@ -5,12 +5,12 @@
   },
   "include": ["."],
   "references": [
+    { "path": "../packages/anthropic" },
     { "path": "../packages/core" },
-    { "path": "../packages/ollama" },
     { "path": "../packages/gemini" },
     { "path": "../packages/groq" },
+    { "path": "../packages/ollama" },
     { "path": "../packages/openai" },
-    { "path": "../packages/anthropic" },
     { "path": "../packages/openai-compatible" }
   ]
 }

@@ -1,5 +1,5 @@
-import type { CompletionOptions, CompletionResult } from '@llm-bridge/core';
-import { LLMBridgeError } from '@llm-bridge/core';
+import type { CompletionOptions, CompletionResult } from '@omnillm/core';
+import { LLMBridgeError } from '@omnillm/core';
 
 interface AnthropicMessage {
   role: 'user' | 'assistant';
@@ -20,7 +20,7 @@ interface AnthropicResponse {
 
 export function toRequest(options: CompletionOptions, stream: boolean = false) {
   const messages: AnthropicMessage[] = [];
-  const system: { text: string, type: 'text' }[] = [];
+  const system: { text: string; type: 'text' }[] = [];
 
   for (const message of options.messages) {
     if (message.role === 'system') {

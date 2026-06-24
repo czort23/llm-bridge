@@ -1,4 +1,4 @@
-import { OpenAICompatibleProvider } from '@llm-bridge/openai-compatible';
+import { OpenAICompatibleProvider } from '@omnillm/openai-compatible';
 
 interface OpenAIConfig {
   baseUrl?: string;

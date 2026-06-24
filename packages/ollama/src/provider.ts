@@ -1,11 +1,11 @@
-import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-bridge/core';
+import type { CompletionOptions, CompletionResult, LLMProvider } from '@omnillm/core';
 import {
   ProviderError,
   httpPost,
   resolveModel,
   responseLines,
   DEFAULT_RETRYABLE_STATUS_CODES,
-} from '@llm-bridge/core';
+} from '@omnillm/core';
 import { fromResponse, toRequest } from './mapping.js';
 
 interface OllamaConfig {
@@ -39,15 +39,12 @@ export class OllamaProvider implements LLMProvider {
     const url = `${this.baseUrl}/api/chat`;
     const model = resolveModel(options.model, this.model);
 
-    return await httpPost(
-      url,
-      {
-        headers: this.headers(),
-        body: toRequest({ ...options, model }, stream),
-        retryableCodes: DEFAULT_RETRYABLE_STATUS_CODES,
-        providerName: 'Ollama'
-      }
-    );
+    return await httpPost(url, {
+      headers: this.headers(),
+      body: toRequest({ ...options, model }, stream),
+      retryableCodes: DEFAULT_RETRYABLE_STATUS_CODES,
+      providerName: 'Ollama',
+    });
   }
 
   async complete(options: CompletionOptions): Promise<CompletionResult> {
@@ -69,8 +66,8 @@ export class OllamaProvider implements LLMProvider {
     }
 
     for await (const line of responseLines(response.body)) {
-      const chunk = JSON.parse(line) as { message: { content: string }; done: boolean };
-      yield chunk.message.content;
+      const chunk = JSON.parse(line) as { message: { content?: string }; done: boolean };
+      yield chunk.message.content ?? '';
       if (chunk.done) break;
     }
   }

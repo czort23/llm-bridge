@@ -1,11 +1,11 @@
-import type { CompletionOptions, CompletionResult, LLMProvider } from '@llm-bridge/core';
+import type { CompletionOptions, CompletionResult, LLMProvider } from '@omnillm/core';
 import {
   ProviderError,
   httpPost,
   resolveModel,
   responseLines,
   DEFAULT_RETRYABLE_STATUS_CODES,
-} from '@llm-bridge/core';
+} from '@omnillm/core';
 import { fromResponse, toRequest } from './mapping.js';
 
 export interface OpenAICompatibleConfig {
@@ -32,7 +32,7 @@ export class OpenAICompatibleProvider implements LLMProvider {
     return {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${this.apiKey}`,
-    }
+    };
   }
 
   protected get retryableCodes(): readonly number[] {
@@ -58,7 +58,10 @@ export class OpenAICompatibleProvider implements LLMProvider {
       const data: unknown = await response.json();
       return fromResponse(data, this.providerName);
     } catch (error) {
-      throw new ProviderError(`${this.providerName} returned invalid JSON: ${String(error)}`, response.status);
+      throw new ProviderError(
+        `${this.providerName} returned invalid JSON: ${String(error)}`,
+        response.status,
+      );
     }
   }
 

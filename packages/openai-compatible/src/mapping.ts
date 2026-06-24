@@ -1,5 +1,5 @@
-import type { CompletionOptions, CompletionResult } from '@llm-bridge/core';
-import { LLMBridgeError } from '@llm-bridge/core';
+import type { CompletionOptions, CompletionResult } from '@omnillm/core';
+import { LLMBridgeError } from '@omnillm/core';
 
 interface OpenAICompatibleResponse {
   choices: {
@@ -28,7 +28,9 @@ export function fromResponse(data: unknown, providerName: string): CompletionRes
   const response = data as OpenAICompatibleResponse;
   const text = response.choices[0]?.message.content;
   if (text === undefined) {
-    throw new LLMBridgeError(`${providerName} returned no content (possibly blocked or empty response)`);
+    throw new LLMBridgeError(
+      `${providerName} returned no content (possibly blocked or empty response)`,
+    );
   }
 
   return {
