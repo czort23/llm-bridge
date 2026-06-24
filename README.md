@@ -1,5 +1,9 @@
 # omnillm
 
+[![npm](https://img.shields.io/npm/v/@omnillm/core?label=npm)](https://www.npmjs.com/package/@omnillm/core)
+[![license](https://img.shields.io/npm/l/@omnillm/core)](./LICENSE)
+[![types](https://img.shields.io/npm/types/@omnillm/core)](https://www.typescriptlang.org/)
+
 A lightweight, framework-agnostic TypeScript abstraction over LLM providers. Write your code once against a single interface, and switch between OpenAI, Anthropic, Gemini, Groq, and Ollama by changing one line.
 
 ```ts
